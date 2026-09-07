@@ -71,6 +71,19 @@ cmake \
 make -j$(sysctl -n hw.ncpu)
 ```
 
+cd ~/tmp/DSC_Analysis/build
+cmake \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+  -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
+  -DITK_DIR="$(brew --prefix itk)/lib/cmake/ITK-5.4" \
+  -DSlicerExecutionModel_DIR=/Users/rcalmon/tmp/SlicerExecutionModel/build \
+  ..
+make -j$(sysctl -n hw.ncpu)
+
+
+
+
+
 Binary lands at `DSC_Analysis/build/CLI/bin/DSCMRIAnalysis`.
 
 ## 3. Prepare input data (DICOM → NRRD with required metadata)
