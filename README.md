@@ -60,7 +60,7 @@ make -j$(sysctl -n hw.ncpu)
 ## 2. Build this repo
 
 ```bash
-git clone https://github.com/<your-username>/DSC_Analysis.git
+git clone https://github.com/raphaelcalmon/DSC_Analysis.git
 cd DSC_Analysis && mkdir build && cd build
 cmake \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
