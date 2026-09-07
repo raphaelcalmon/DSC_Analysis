@@ -20,4 +20,93 @@ Acknowledgments: This work is part of the National Alliance for Medical Image Co
 3. [Other method to investigate DSC MRI](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4208985/pdf/radiol.14132458.pdf)
 4. [Leakage correction for DSC MRI](http://www.ncbi.nlm.nih.gov/pubmed/16611779)
 
+# Building DSCMRIAnalysis Standalone on Apple Silicon (macOS, arm64)
 
+This fork builds the DSC-MRI perfusion CLI natively, without a full Slicer install.
+
+## Prerequisites
+
+```bash
+brew install itk dcm2niix
+```
+
+**Patch a stale SDK path baked into Homebrew's ITK.** Homebrew's ITK bottle hardcodes an
+absolute Command Line Tools SDK path in three CMake module files, which can mismatch your
+system's actual SDK and cause `<cstring>`/`<cmath>`/etc. header errors. Fix once:
+
+```bash
+for f in \
+  $(brew --prefix itk)/lib/cmake/ITK-5.4/Modules/ITKPNG.cmake \
+  $(brew --prefix itk)/lib/cmake/ITK-5.4/Modules/ITKZLIB.cmake \
+  $(brew --prefix itk)/lib/cmake/ITK-5.4/Modules/ITKExpat.cmake
+do
+  sed -i '' \
+    's#/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk/usr/include#'"$(xcrun --show-sdk-path)"'/usr/include#g' \
+    "$f"
+done
+```
+(Re-apply after any `brew upgrade`/`reinstall` of itk.)
+
+## 1. Build SlicerExecutionModel (SEM)
+
+```bash
+git clone https://github.com/Slicer/SlicerExecutionModel.git
+cd SlicerExecutionModel && mkdir build && cd build
+cmake -DITK_DIR="$(brew --prefix itk)/lib/cmake/ITK-5.4" \
+      -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" ..
+make -j$(sysctl -n hw.ncpu)
+```
+
+## 2. Build this repo
+
+```bash
+git clone https://github.com/<your-username>/DSC_Analysis.git
+cd DSC_Analysis && mkdir build && cd build
+cmake \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+  -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
+  -DITK_DIR="$(brew --prefix itk)/lib/cmake/ITK-5.4" \
+  -DSlicerExecutionModel_DIR=/path/to/SlicerExecutionModel/build \
+  ..
+make -j$(sysctl -n hw.ncpu)
+```
+
+Binary lands at `DSC_Analysis/build/CLI/bin/DSCMRIAnalysis`.
+
+## 3. Prepare input data (DICOM → NRRD with required metadata)
+
+The tool needs a 4D volume tagged with per-frame timing, TE, and flip angle
+(`MultiVolume.*` fields) — a plain NIfTI/NRRD from a converter won't have these.
+
+```bash
+dcm2niix -e y -f perf -o /output/dir /path/to/dicom/series
+./add_multivolume_fields.sh /output/dir/perf.nhdr /output/dir/perf_ready.nhdr
+```
+
+(`add_multivolume_fields.sh` is included in this repo — it reads TR/TE/FlipAngle and
+frame count directly out of the dcm2niix header and appends the fields DSCMRIAnalysis
+requires. No manual edits needed per scan.)
+
+## 4. Run
+
+```bash
+DSC_Analysis/build/CLI/bin/DSCMRIAnalysis \
+  --usePopAif \
+  --outputCBF cbf.nii.gz --outputAUC cbv.nii.gz --outputMTT mtt.nii.gz \
+  perf_ready.nhdr
+```
+
+Use `--aifMask <mask.nii.gz>` instead of `--usePopAif` for a patient-specific arterial
+input function drawn from your own images (e.g. in ITK-SNAP).
+
+## Notes on this fork's changes vs. upstream
+
+- `CMakeLists.txt`: replaced Slicer-extension-only build with a standalone path
+  (`find_package(SlicerExecutionModel)` + `find_package(ITK)` directly).
+- `CLI/DSCMRIAnalysis.cxx`: removed dead `itkMultiThreader.h` include (ITK5 removed it);
+  updated `ImageIOBase::IOPixelType`/`IOComponentType` and enum values to ITK5's
+  `itk::IOPixelEnum`/`itk::IOComponentEnum`.
+- `CLI/itkPluginUtilities.h`, `CLI/itkPluginFilterWatcher.h`, `CLI/Configuration.h`:
+  copied from PkModeling (this module's original parent extension) and patched for
+  ITK5 enum names — these generic helper headers were missing from the original
+  DSC_Analysis checkout.
