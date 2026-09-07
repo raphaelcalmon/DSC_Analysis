@@ -93,9 +93,9 @@ dcm2niix -e y -o . .
 ```
 
 
-(`add_multivolume_fields.sh` is included in this repo — it reads TR/TE/FlipAngle and
-frame count directly out of the dcm2niix header and appends the fields DSCMRIAnalysis
-requires. No manual edits needed per scan.)
+DSCMRIAnalysis requires  TR, TE, FlipAngle, and frame count information in a specific format,
+the following code reads them directly out of the dcm2niix header and adjusts it. (No manual edits
+needed per scan.)
 
 ```zsh
 #!/usr/bin/env zsh
