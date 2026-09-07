@@ -74,7 +74,7 @@ cmake \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
   -DITK_DIR="$(brew --prefix itk)/lib/cmake/ITK-5.4" \
-  -DSlicerExecutionModel_DIR=/../../SlicerExecutionModel/build \
+  -DSlicerExecutionModel_DIR=/path/to/SlicerExecutionModel/build \
   ..
 make -j$(sysctl -n hw.ncpu)
 ```
