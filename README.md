@@ -51,7 +51,8 @@ done
 
 ```bash
 git clone https://github.com/Slicer/SlicerExecutionModel.git
-cd SlicerExecutionModel && mkdir build && cd build
+cd SlicerExecutionModel
+mkdir build && cd build
 cmake -DITK_DIR="$(brew --prefix itk)/lib/cmake/ITK-5.4" \
       -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" ..
 make -j$(sysctl -n hw.ncpu)
@@ -61,30 +62,26 @@ make -j$(sysctl -n hw.ncpu)
 
 ```bash
 git clone https://github.com/raphaelcalmon/DSC_Analysis.git
-cd DSC_Analysis && mkdir build && cd build
+cd DSC_Analysis
+mkdir build && cd build
+```
+
+```zsh
 cmake \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
   -DITK_DIR="$(brew --prefix itk)/lib/cmake/ITK-5.4" \
-  -DSlicerExecutionModel_DIR=/path/to/SlicerExecutionModel/build \
+  -DSlicerExecutionModel_DIR=/../../SlicerExecutionModel/build \
   ..
 make -j$(sysctl -n hw.ncpu)
 ```
 
-cd ~/tmp/DSC_Analysis/build
-cmake \
-  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-  -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
-  -DITK_DIR="$(brew --prefix itk)/lib/cmake/ITK-5.4" \
-  -DSlicerExecutionModel_DIR=/Users/rcalmon/tmp/SlicerExecutionModel/build \
-  ..
-make -j$(sysctl -n hw.ncpu)
+install 
 
+```zsh
+sudo make install
+```
 
-
-
-
-Binary lands at `DSC_Analysis/build/CLI/bin/DSCMRIAnalysis`.
 
 ## 3. Prepare input data (DICOM → NRRD with required metadata)
 
