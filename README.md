@@ -94,8 +94,7 @@ dcm2niix -e y -o . .
 
 
 DSCMRIAnalysis requires  TR, TE, FlipAngle, and frame count information in a specific format,
-the following code reads them directly out of the dcm2niix header and adjusts it. (No manual edits
-needed per scan.)
+the following code reads them directly out of the dcm2niix header and adjusts it. (No manual edits).
 
 ```zsh
 #!/usr/bin/env zsh
