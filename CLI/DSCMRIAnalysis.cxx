@@ -4,7 +4,6 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkTimeProbesCollectorBase.h"
-#include "itkMultiThreader.h"
 #include "itkResampleImageFilter.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 
@@ -494,8 +493,8 @@ int main( int argc, char * argv[] )
   // when the test succeeds (to see the reproducibility error measure)
   std::cout << "ctest needs: CTEST_FULL_OUTPUT" << std::endl;
 
-  itk::ImageIOBase::IOPixelType     pixelType;
-  itk::ImageIOBase::IOComponentType componentType;
+  itk::IOPixelEnum     pixelType;
+  itk::IOComponentEnum componentType;
 
   try
     {
@@ -506,29 +505,29 @@ int main( int argc, char * argv[] )
 
     switch( componentType )
       {
-      case itk::ImageIOBase::CHAR:
-      case itk::ImageIOBase::UCHAR:
-      case itk::ImageIOBase::SHORT:
+      case itk::IOComponentEnum::CHAR:
+      case itk::IOComponentEnum::UCHAR:
+      case itk::IOComponentEnum::SHORT:
         return DoIt( argc, argv, static_cast<short>(0),static_cast<short>(0) );
         break;
-      case itk::ImageIOBase::USHORT:
-      case itk::ImageIOBase::INT:
+      case itk::IOComponentEnum::USHORT:
+      case itk::IOComponentEnum::INT:
         return DoIt( argc, argv, static_cast<int>(0),static_cast<short>(0) );
         break;
-      case itk::ImageIOBase::UINT:
-      case itk::ImageIOBase::ULONG:
+      case itk::IOComponentEnum::UINT:
+      case itk::IOComponentEnum::ULONG:
         return DoIt( argc, argv, static_cast<unsigned long>(0),static_cast<short>(0) );
         break;
-      case itk::ImageIOBase::LONG:
+      case itk::IOComponentEnum::LONG:
         return DoIt( argc, argv, static_cast<long>(0),static_cast<short>(0) );
         break;
-      case itk::ImageIOBase::FLOAT:
+      case itk::IOComponentEnum::FLOAT:
         return DoIt( argc, argv, static_cast<float>(0),static_cast<short>(0) );
         break;
-      case itk::ImageIOBase::DOUBLE:
+      case itk::IOComponentEnum::DOUBLE:
         return DoIt( argc, argv, static_cast<float>(0),static_cast<short>(0) );
         break;
-      case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
+      case itk::IOComponentEnum::UNKNOWNCOMPONENTTYPE:
       default:
         std::cout << "unknown component type" << std::endl;
         break;
