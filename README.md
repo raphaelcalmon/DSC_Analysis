@@ -25,9 +25,12 @@ Acknowledgments: This work is part of the National Alliance for Medical Image Co
 This fork builds the DSC-MRI perfusion CLI natively, without a full Slicer install.
 
 ## Prerequisites
+ - itk
+ - dcm2niix
+ - itk-snap
 
 ```bash
-brew install itk dcm2niix
+brew install itk dcm2niix itk-snap
 ```
 
 **Patch a stale SDK path baked into Homebrew's ITK.** Homebrew's ITK bottle hardcodes an
