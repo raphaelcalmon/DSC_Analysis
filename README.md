@@ -89,13 +89,57 @@ The tool needs a 4D volume tagged with per-frame timing, TE, and flip angle
 (`MultiVolume.*` fields) — a plain NIfTI/NRRD from a converter won't have these.
 
 ```bash
-dcm2niix -e y -f perf -o /output/dir /path/to/dicom/series
-./add_multivolume_fields.sh /output/dir/perf.nhdr /output/dir/perf_ready.nhdr
+dcm2niix -e y -o . . 
 ```
+
 
 (`add_multivolume_fields.sh` is included in this repo — it reads TR/TE/FlipAngle and
 frame count directly out of the dcm2niix header and appends the fields DSCMRIAnalysis
 requires. No manual edits needed per scan.)
+
+```zsh
+#!/usr/bin/env zsh
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: $0 <.nhdr file>"
+  exit 1
+fi
+
+in_file=$1
+seriestime=${${1:r}##*.}
+
+if grep "MultiVolume.FrameIdentifyingDICOMTagName:=AcquisitionTime" $in_file >/dev/null ; then 
+  echo "$in_file file already adjusted for DSCMRIAnalysis"
+  # exit 0
+else
+  # Identify Number of frames by the kind of the dimension / size
+  dim_kinds=($(grep kinds $in_file))
+  dim_sizes=($(grep sizes $in_file))
+  index=$(echo ${dim_kinds[(i)list]})
+  frames=$dim_sizes[$index]
+  # frames=$(awk '/sizes/{print $5}' $in_file)
+  TR=$(grep "DICOM_0018_0080" $in_file | cut -d "=" -f 2)
+  TE=$(grep "DICOM_0018_0081" $in_file | cut -d "=" -f 2)
+  FA=$(grep "DICOM_0018_1314" $in_file | cut -d "=" -f 2)
+
+  frame_labels=$(awk -v n="$frames" -v tr="$TR" 'BEGIN{ for (i=0; i<n; i++) { printf "%s%.1f", (i==0 ? "" : ","), i*tr } }')
+
+  sed -i '' '/DWMRI/,$d' $in_file
+
+  cat << EOF >> $in_file
+MultiVolume.FrameIdentifyingDICOMTagName:=AcquisitionTime
+MultiVolume.FrameLabels:=${frame_labels}
+MultiVolume.NumberOfFrames:=${frames}
+MultiVolume.DICOM.EchoTime:=${TE}
+MultiVolume.DICOM.FlipAngle:=${FA}
+EOF
+fi
+
+echo "\nRun:\n"
+echo "DSCMRIAnalysis --usePopAif --outputCBF cbf.nii --outputAUC cbv.nii $in_file\n"
+
+echo "DSCMRIAnalysis --aifMask aif.nrrd --outputAUC aif.cbv.$seriestime.nii --outputCBF aif.cbf.$seriestime.nii $in_file\n"
+```
 
 ## 4. Run
 
