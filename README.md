@@ -29,7 +29,7 @@ This fork builds the DSC-MRI perfusion CLI natively, without a full Slicer insta
  - dcm2niix
  - itk-snap
 
-```bash
+```zsh
 brew install itk dcm2niix itk-snap
 ```
 
@@ -37,7 +37,7 @@ brew install itk dcm2niix itk-snap
 absolute Command Line Tools SDK path in three CMake module files, which can mismatch your
 system's actual SDK and cause `<cstring>`/`<cmath>`/etc. header errors. Fix once:
 
-```bash
+```zsh
 for f in \
   $(brew --prefix itk)/lib/cmake/ITK-5.4/Modules/ITKPNG.cmake \
   $(brew --prefix itk)/lib/cmake/ITK-5.4/Modules/ITKZLIB.cmake \
@@ -52,7 +52,7 @@ done
 
 ## 1. Build SlicerExecutionModel (SEM)
 
-```bash
+```zsh
 git clone https://github.com/Slicer/SlicerExecutionModel.git
 cd SlicerExecutionModel
 mkdir build && cd build
@@ -63,7 +63,7 @@ make -j$(sysctl -n hw.ncpu)
 
 ## 2. Build this repo
 
-```bash
+```zsh
 git clone https://github.com/raphaelcalmon/DSC_Analysis.git
 cd DSC_Analysis
 mkdir build && cd build
@@ -91,7 +91,7 @@ sudo make install
 The tool needs a 4D volume tagged with per-frame timing, TE, and flip angle
 (`MultiVolume.*` fields) — a plain NIfTI/NRRD from a converter won't have these.
 
-```bash
+```zsh
 dcm2niix -e y -o . . 
 ```
 
@@ -145,7 +145,7 @@ echo "DSCMRIAnalysis --aifMask aif.nrrd --outputAUC aif.cbv.$seriestime.nii --ou
 
 ## 4. Run
 
-```bash
+```zsh
 DSC_Analysis/build/CLI/bin/DSCMRIAnalysis \
   --usePopAif \
   --outputCBF cbf.nii.gz --outputAUC cbv.nii.gz --outputMTT mtt.nii.gz \
